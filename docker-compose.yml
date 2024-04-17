@@ -1,0 +1,59 @@
+version: "2"
+services:
+  webserver:
+    image: mydemophpimage
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./app:/var/www/html
+    environment:
+      MYSQL_DB_CONNECTION: my_secret_password
+      MYSQL_ROOT_PASSWORD: my_secret_password
+      MYSQL_ROOT_USER: root
+      MYSQL_DB_NAME: csc226db
+      MYSQL_USER: test
+      MYSQL_PASSWORD: test
+      SITE_URL: http://localhost
+      links: db
+    depends_on:
+      - db
+
+  db:
+    image: mysql:5.7
+    container_name: mysqldb
+    environment:
+      MYSQL_ROOT_PASSWORD: my_secret_password
+      MYSQL_DATABASE: csc226db
+      MYSQL_USER: test
+      MYSQL_PASSWORD: test
+    ports:
+      - "6033:3306"
+    volumes:
+      - dbdata:/var/lib/mysql
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: pma
+    links:
+      - db
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      PMA_ARBITRARY: 1
+    restart: always
+    ports:
+      - 8081:80
+  mydemoreactimage:
+    image: mydemoreactimage
+    container_name: mydemoreactimage
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./frontend/react-docker:/app
+    ports:
+      - 3001:3000
+    environment:
+      - WATCHPACK_POLLING=true
+volumes:
+  dbdata:
